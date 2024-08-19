@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -28,7 +29,10 @@ import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.base.route.NavigationRoute
 import com.mapbox.navigation.base.route.NavigationRouterCallback
 import com.mapbox.navigation.base.route.RouterFailure
+import com.mapbox.navigation.base.trip.model.RouteLegProgress
+import com.mapbox.navigation.base.trip.model.RouteProgress
 import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.arrival.ArrivalObserver
 import com.mapbox.navigation.core.directions.session.RoutesObserver
 import com.mapbox.navigation.core.formatter.MapboxDistanceFormatter
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
@@ -404,6 +408,7 @@ class TurnByTurnExperienceActivity : AppCompatActivity() {
                 mapboxNavigation.registerLocationObserver(locationObserver)
                 mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
                 mapboxNavigation.registerVoiceInstructionsObserver(voiceInstructionsObserver)
+                mapboxNavigation.registerArrivalObserver(arrivalObserver) // MLM added
 
                 replayProgressObserver = ReplayProgressObserver(mapboxNavigation.mapboxReplayer)
                 mapboxNavigation.registerRouteProgressObserver(replayProgressObserver)
@@ -421,6 +426,7 @@ class TurnByTurnExperienceActivity : AppCompatActivity() {
                 mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
                 mapboxNavigation.unregisterRouteProgressObserver(replayProgressObserver)
                 mapboxNavigation.unregisterVoiceInstructionsObserver(voiceInstructionsObserver)
+                mapboxNavigation.unregisterArrivalObserver(arrivalObserver) // MLM added
                 mapboxNavigation.mapboxReplayer.finish()
             }
         },
@@ -651,6 +657,14 @@ class TurnByTurnExperienceActivity : AppCompatActivity() {
         // will be used for active guidance
         mapboxNavigation.setNavigationRoutes(routes)
 
+        // begin MLM added
+
+        val route = routes.first()
+
+        Log.d("mlm-route-diff", "route distance = ${route.directionsRoute.distance()}")
+
+        // end MLM added
+
         // show UI elements
         binding.soundButton.visibility = View.VISIBLE
         binding.routeOverview.visibility = View.VISIBLE
@@ -689,5 +703,21 @@ class TurnByTurnExperienceActivity : AppCompatActivity() {
     private fun stopSimulation() {
         mapboxNavigation.mapboxReplayer.stop()
         mapboxNavigation.mapboxReplayer.clearEvents()
+    }
+
+    // MLM added to end
+
+    private val arrivalObserver = object : ArrivalObserver {
+        override fun onFinalDestinationArrival(routeProgress: RouteProgress) {
+            Log.d("mlm-route-diff", "route progress distance = ${routeProgress.distanceTraveled}")
+        }
+
+        override fun onNextRouteLegStart(routeLegProgress: RouteLegProgress) {
+            // unused
+        }
+
+        override fun onWaypointArrival(routeProgress: RouteProgress) {
+            // unused
+        }
     }
 }
