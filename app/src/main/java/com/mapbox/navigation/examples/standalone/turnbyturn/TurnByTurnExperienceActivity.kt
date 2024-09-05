@@ -531,7 +531,8 @@ class TurnByTurnExperienceActivity : AppCompatActivity() {
 
             // add long click listener that search for a route to the clicked destination
             binding.mapView.gestures.addOnMapLongClickListener { point ->
-                findRoute(point)
+// MLM replaced with below line               findRoute(point)
+                findRoute(Point.fromLngLat(-71.0622259, 42.3663097))
                 true
             }
         }
@@ -594,7 +595,8 @@ class TurnByTurnExperienceActivity : AppCompatActivity() {
                 listOf(
                     ReplayRouteMapper.mapToUpdateLocation(
                         Date().time.toDouble(),
-                        Point.fromLngLat(-122.39726512303575, 37.785128345296805)
+                        Point.fromLngLat(-71.0935584, 42.359143)
+// MLM replaced with above line                        Point.fromLngLat(-122.39726512303575, 37.785128345296805)
                     )
                 )
             )
